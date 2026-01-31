@@ -1,7 +1,6 @@
-import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import { formatPrice } from '@/lib/utils'
 import { getTrendingDishes } from '@/services/trending.service'
+import { DishGrid } from '@/components/dish/DishGrid'
 
 interface DishesPageProps {
   searchParams?: {
@@ -68,54 +67,23 @@ export default async function DishesPage({ searchParams }: DishesPageProps) {
           </p>
         </div>
 
-        {dishes.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center text-gray-600">
-            No dishes found. Check back soon for the latest additions.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {dishes.map((dish) => {
-              const latestPrice = dish.prices[0]
-              return (
-                <Link
-                  key={dish.id}
-                  href={`/dishes/${dish.id}`}
-                  className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-lg"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h2 className="text-xl font-semibold text-gray-900">
-                        {dish.name}
-                      </h2>
-                      <p className="mt-1 text-sm text-gray-500">
-                        {dish.restaurant.name}
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-600">
-                      ⭐ {dish.averageRating.toFixed(1)}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-sm text-gray-600">
-                    {dish.category || 'Featured dish'}
-                  </p>
-                  {dish.description && (
-                    <p className="mt-2 text-sm text-gray-600 line-clamp-3">
-                      {dish.description}
-                    </p>
-                  )}
-                  <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-                    <span>{dish.totalReviews} reviews</span>
-                    {latestPrice && (
-                      <span className="rounded-full bg-green-50 px-3 py-1 text-sm font-semibold text-green-600">
-                        {formatPrice(latestPrice.price, latestPrice.currency)}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        )}
+        <DishGrid
+          dishes={dishes.map((dish) => {
+            const latestPrice = dish.prices[0]
+            return {
+              id: dish.id,
+              name: dish.name,
+              averageRating: dish.averageRating,
+              totalReviews: dish.totalReviews,
+              restaurantName: dish.restaurant.name,
+              category: dish.category,
+              description: dish.description,
+              lowestPrice: latestPrice ? latestPrice.price : null,
+              currency: latestPrice ? latestPrice.currency : undefined,
+            }
+          })}
+          emptyState="No dishes found. Check back soon for the latest additions."
+        />
       </div>
     </main>
   )

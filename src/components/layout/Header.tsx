@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { signOut, useSession } from 'next-auth/react'
+import { Button } from '@/components/ui/Button'
 
-export function SiteHeader() {
+export function Header() {
   const { data: session, status } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN'
 
@@ -13,7 +14,7 @@ export function SiteHeader() {
         <Link href="/" className="text-lg font-semibold text-gray-900">
           Croatian Food Aggregator
         </Link>
-        <nav className="flex items-center gap-3">
+        <nav className="hidden items-center gap-3 md:flex">
           {status === 'loading' ? (
             <span className="text-sm text-gray-500">Checking session...</span>
           ) : session ? (
@@ -26,13 +27,9 @@ export function SiteHeader() {
                   Add Restaurant
                 </Link>
               )}
-              <button
-                type="button"
-                onClick={() => signOut({ callbackUrl: '/' })}
-                className="rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={() => signOut({ callbackUrl: '/' })}>
                 Log Out
-              </button>
+              </Button>
             </>
           ) : (
             <>

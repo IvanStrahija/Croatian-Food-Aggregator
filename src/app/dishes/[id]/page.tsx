@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { formatPrice } from '@/lib/utils'
+import { Rating } from '@/components/ui/Rating'
+import { PriceComparison } from '@/components/restaurant/PriceComparison'
+import { DishReviews } from '@/components/dish/DishReviews'
 
 interface DishDetailPageProps {
   params: {
@@ -17,6 +20,10 @@ export default async function DishDetailPage({ params }: DishDetailPageProps) {
       prices: {
         where: { isActive: true },
         orderBy: { updatedAt: 'desc' },
+      },
+      reviews: {
+        orderBy: { createdAt: 'desc' },
+        take: 6,
       },
     },
   })
@@ -38,8 +45,7 @@ export default async function DishDetailPage({ params }: DishDetailPageProps) {
           <h1 className="text-3xl font-bold text-gray-900">{dish.name}</h1>
           <p className="mt-1 text-gray-500">{dish.category || 'Featured dish'}</p>
           <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-600">
-            <span>⭐ {dish.averageRating.toFixed(1)} rating</span>
-            <span>{dish.totalReviews} reviews</span>
+            <Rating value={dish.averageRating} label={`${dish.totalReviews} reviews`} />
             {latestPrice && (
               <span className="rounded-full bg-green-50 px-3 py-1 text-sm font-semibold text-green-600">
                 {formatPrice(latestPrice.price, latestPrice.currency)}
@@ -52,12 +58,36 @@ export default async function DishDetailPage({ params }: DishDetailPageProps) {
           )}
         </div>
 
-        <section className="mt-8 rounded-lg border border-dashed border-gray-300 bg-white p-6 text-gray-600">
+        <section className="mt-8">
           <h2 className="text-xl font-semibold text-gray-900">Where to order</h2>
-          <p className="mt-2 text-sm">
-            We are connecting delivery services for this dish. Check back soon for live links.
+          <p className="mt-2 text-sm text-gray-600">
+            Compare the latest prices across delivery services.
           </p>
+          <div className="mt-4">
+            <PriceComparison
+              prices={dish.prices.map((price) => ({
+                id: price.id,
+                service: price.service,
+                price: price.price,
+                currency: price.currency,
+                updatedAt: price.updatedAt,
+              }))}
+            />
+          </div>
         </section>
+
+        <DishReviews
+          dishName={dish.name}
+          reviews={dish.reviews.map((review) => ({
+            id: review.id,
+            rating: review.rating,
+            title: review.title,
+            comment: review.comment,
+            dishName: dish.name,
+            restaurantName: dish.restaurant.name,
+            createdAt: review.createdAt.toISOString(),
+          }))}
+        />
       </div>
     </main>
   )
