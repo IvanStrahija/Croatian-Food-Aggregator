@@ -1,5 +1,5 @@
 # Base stage with dependencies
-FROM node:18-alpine AS base
+FROM node:18-alpine3.18 AS base
 RUN apk add --no-cache libc6-compat openssl1.1-compat
 WORKDIR /app
 COPY package*.json ./
@@ -21,7 +21,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
 # Production stage
-FROM node:18-alpine AS production
+FROM node:18-alpine3.18 AS production
 WORKDIR /app
 
 ENV NODE_ENV production

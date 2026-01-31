@@ -1,12 +1,17 @@
 import { getTrendingRestaurants, getTrendingDishes } from '@/services/trending.service'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 export default async function HomePage() {
-  const [trendingRestaurants, trendingDishes] = await Promise.all([
+  const [trendingRestaurants, trendingDishes, session] = await Promise.all([
     getTrendingRestaurants(6),
     getTrendingDishes(8),
+    getServerSession(authOptions),
   ])
+
+  const isAdmin = session?.user?.role === 'ADMIN'
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
@@ -52,8 +57,31 @@ export default async function HomePage() {
           >
             🍽️ All Restaurants
           </Link>
+          
+          {/* Admin Button - Only visible to admins */}
+          {isAdmin && (
+            <Link
+              href="/admin/restaurants/new"
+              className="px-6 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition-colors font-medium"
+            >
+              ⚙️ Add Restaurant
+            </Link>
+          )}
         </div>
       </section>
+
+      {/* Admin Quick Access - Alternative placement at top right */}
+      {isAdmin && (
+        <div className="fixed top-4 right-4 z-50">
+          <Link
+            href="/admin/restaurants/new"
+            className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-purple-700 transition-all hover:shadow-xl"
+          >
+            <span className="text-xl">⚙️</span>
+            <span className="font-medium">Admin: Add Restaurant</span>
+          </Link>
+        </div>
+      )}
 
       {/* Trending Restaurants */}
       <section className="container mx-auto px-4 py-12">
@@ -174,18 +202,29 @@ export default async function HomePage() {
             Join our community and share your food experiences with others
           </p>
           <div className="flex gap-4 justify-center">
-            <Link
-              href="/register"
-              className="bg-white text-orange-500 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors"
-            >
-              Sign Up Free
-            </Link>
-            <Link
-              href="/login"
-              className="border-2 border-white text-white px-8 py-3 rounded-full font-bold hover:bg-white hover:text-orange-500 transition-colors"
-            >
-              Login
-            </Link>
+            {!session ? (
+              <>
+                <Link
+                  href="/register"
+                  className="bg-white text-orange-500 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors"
+                >
+                  Sign Up Free
+                </Link>
+                <Link
+                  href="/login"
+                  className="border-2 border-white text-white px-8 py-3 rounded-full font-bold hover:bg-white hover:text-orange-500 transition-colors"
+                >
+                  Login
+                </Link>
+              </>
+            ) : (
+              <div className="text-white">
+                <p className="text-xl">Welcome back, {session.user?.name || session.user?.email}!</p>
+                {isAdmin && (
+                  <p className="text-sm mt-2 opacity-90">You have admin access</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </section>
