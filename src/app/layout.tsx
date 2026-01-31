@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { Providers } from '@/components/Providers'
+import { SiteHeader } from '@/components/SiteHeader'
 
 export const metadata: Metadata = {
   title: 'Croatian Food Aggregator',
@@ -20,6 +21,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-white">
         <Providers>
+	  <SiteHeader />
           {children}
         </Providers>
       </body>

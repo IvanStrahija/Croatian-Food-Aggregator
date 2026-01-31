@@ -40,7 +40,7 @@ export default function NewRestaurantPage() {
     if (status === 'unauthenticated') {
       router.push('/login')
     } else if (status === 'authenticated' && session?.user?.role !== 'ADMIN') {
-      router.push('/')
+      window.location.assign('/')
     }
   }, [status, session, router])
 
@@ -109,7 +109,7 @@ export default function NewRestaurantPage() {
 
       setSuccess(true)
       setTimeout(() => {
-        router.push('/')
+        window.location.assign('/')
       }, 2000)
     } catch (err: any) {
       setError(err.message)
