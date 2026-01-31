@@ -6,7 +6,7 @@ COPY package*.json ./
 
 # Development stage
 FROM base AS development
-RUN npm ci
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 COPY . .
 RUN npx prisma generate
 EXPOSE 3000
@@ -14,7 +14,7 @@ CMD ["npm", "run", "dev"]
 
 # Build stage
 FROM base AS builder
-RUN npm ci
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 COPY . .
 RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED 1
