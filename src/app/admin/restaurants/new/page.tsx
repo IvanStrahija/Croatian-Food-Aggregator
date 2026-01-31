@@ -90,6 +90,7 @@ export default function NewRestaurantPage() {
     try {
       const response = await fetch('/api/restaurants', {
         method: 'POST',
+	credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
