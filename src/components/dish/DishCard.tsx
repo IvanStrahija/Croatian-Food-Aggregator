@@ -24,7 +24,7 @@ interface DishCardProps {
 }
 
 export function DishCard({ dish, variant = 'compact' }: DishCardProps) {
-  const href = dish.slug ? `/dishes/${dish.slug}` : `/dishes/${dish.id}`
+  const href = `/dishes/${dish.id}`
 
   if (variant === 'featured') {
     return (

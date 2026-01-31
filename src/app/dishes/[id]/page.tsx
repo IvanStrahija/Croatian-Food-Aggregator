@@ -13,8 +13,13 @@ interface DishDetailPageProps {
 }
 
 export default async function DishDetailPage({ params }: DishDetailPageProps) {
-  const dish = await prisma.dish.findUnique({
-    where: { id: params.id },
+  const dish = await prisma.dish.findFirst({
+    where: {
+      OR: [
+        { id: params.id },
+        { slug: params.id },
+      ],
+    },
     include: {
       restaurant: true,
       prices: {
