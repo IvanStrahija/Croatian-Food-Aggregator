@@ -23,7 +23,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
       target: development
     container_name: food-aggregator-app
     restart: unless-stopped
