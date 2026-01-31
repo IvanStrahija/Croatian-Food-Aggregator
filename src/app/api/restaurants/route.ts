@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getToken } from 'next-auth/jwt'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createSlug } from '@/lib/utils'
 import { z } from 'zod'
@@ -71,16 +72,16 @@ export async function GET(request: Request) {
 // POST - Create restaurant (Admin only)
 export async function POST(request: NextRequest) {
   try {
-    const token = await getToken({ req: request })
+    const session = await getServerSession(authOptions)
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    if (token.role !== 'ADMIN') {
+    if (session.user?.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: 'Admin access required' },
         { status: 403 }
