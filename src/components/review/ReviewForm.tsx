@@ -1,13 +1,79 @@
+'use client'
+
+import * as React from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 
 interface ReviewFormProps {
+  dishId: string
   dishName: string
+  onSubmitted?: (review: ReviewSubmissionResult) => void
 }
 
-export function ReviewForm({ dishName }: ReviewFormProps) {
+interface ReviewSubmissionResult {
+  id: string
+  rating: number
+  title: string | null
+  comment: string | null
+  createdAt: string
+}
+
+export function ReviewForm({ dishId, dishName, onSubmitted }: ReviewFormProps) {
+  const [error, setError] = React.useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError(null)
+    setSuccessMessage(null)
+    setIsSubmitting(true)
+
+    const formData = new FormData(event.currentTarget)
+    const rating = Number(formData.get('rating'))
+    const titleValue = String(formData.get('title') || '').trim()
+    const commentValue = String(formData.get('comment') || '').trim()
+
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dishId,
+          rating,
+          title: titleValue || undefined,
+          comment: commentValue || undefined,
+        }),
+      })
+
+      const data = await response.json().catch(() => null)
+
+      if (!response.ok || !data?.success) {
+        setError(data?.error ?? 'Failed to submit review.')
+        return
+      }
+
+      event.currentTarget.reset()
+      setSuccessMessage('Review submitted.')
+      onSubmitted?.({
+        id: data.data.id,
+        rating: data.data.rating,
+        title: data.data.title,
+        comment: data.data.comment,
+        createdAt: data.data.createdAt,
+      })
+    } catch (submitError) {
+      console.error('Failed to submit review:', submitError)
+      setError('Failed to submit review.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
-    <form className="space-y-4">
+    <form className="space-y-4" onSubmit={handleSubmit}>
       <div>
         <label className="text-sm font-medium text-gray-700">Dish</label>
         <Input value={dishName} readOnly className="mt-1" />
@@ -41,7 +107,19 @@ export function ReviewForm({ dishName }: ReviewFormProps) {
           placeholder="Share your experience..."
         />
       </div>
-      <Button type="submit">Submit review</Button>
+      {error && (
+        <p className="text-sm text-red-600" role="alert">
+          {error}
+        </p>
+      )}
+      {successMessage && (
+        <p className="text-sm text-green-600" role="status">
+          {successMessage}
+        </p>
+      )}
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Submitting...' : 'Submit review'}
+      </Button>
     </form>
   )
 }
