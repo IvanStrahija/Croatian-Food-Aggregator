@@ -1,3 +1,5 @@
+import { MapView } from '@/components/map/MapView'
+
 export default function MapPage() {
   return (
     <main className="min-h-screen bg-gray-50">
@@ -6,9 +8,7 @@ export default function MapPage() {
         <p className="mt-2 text-gray-600">
           Explore restaurants on the map. Interactive map integration is coming next.
         </p>
-        <div className="mt-8 flex h-96 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white text-gray-500">
-          Map placeholder
-        </div>
+        <MapView />
       </div>
     </main>
   )

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { formatPrice } from '@/lib/utils'
+import { DishGrid } from '@/components/dish/DishGrid'
 
 interface RestaurantDetailPageProps {
   params: {
@@ -57,43 +57,24 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
             <span className="text-sm text-gray-500">{restaurant.dishes.length} dishes</span>
           </div>
 
-          {restaurant.dishes.length === 0 ? (
-            <div className="mt-4 rounded-lg border border-dashed border-gray-300 bg-white p-6 text-center text-gray-600">
-              No dishes available yet.
-            </div>
-          ) : (
-            <div className="mt-6 grid gap-6 md:grid-cols-2">
-              {restaurant.dishes.map((dish) => {
+          <div className="mt-6">
+            <DishGrid
+              dishes={restaurant.dishes.map((dish) => {
                 const latestPrice = dish.prices[0]
-                return (
-                  <Link
-                    key={dish.id}
-                    href={`/dishes/${dish.id}`}
-                    className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{dish.name}</h3>
-                        <p className="mt-1 text-sm text-gray-500">
-                          {dish.category || 'Popular dish'}
-                        </p>
-                      </div>
-                      {latestPrice && (
-                        <span className="rounded-full bg-green-50 px-3 py-1 text-sm font-semibold text-green-600">
-                          {formatPrice(latestPrice.price, latestPrice.currency)}
-                        </span>
-                      )}
-                    </div>
-                    {dish.description && (
-                      <p className="mt-3 text-sm text-gray-600 line-clamp-2">
-                        {dish.description}
-                      </p>
-                    )}
-                  </Link>
-                )
+                return {
+                  id: dish.id,
+                  name: dish.name,
+                  averageRating: dish.averageRating,
+                  totalReviews: dish.totalReviews,
+                  category: dish.category ?? 'Popular dish',
+                  description: dish.description,
+                  lowestPrice: latestPrice ? latestPrice.price : null,
+                  currency: latestPrice ? latestPrice.currency : undefined,
+                }
               })}
-            </div>
-          )}
+              emptyState="No dishes available yet."
+            />
+          </div>
         </section>
       </div>
     </main>

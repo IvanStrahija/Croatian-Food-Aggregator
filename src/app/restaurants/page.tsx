@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { RestaurantGrid } from '@/components/restaurant/RestaurantGrid'
 
 interface RestaurantsPageProps {
   searchParams?: {
@@ -30,38 +30,19 @@ export default async function RestaurantsPage({ searchParams }: RestaurantsPageP
           </p>
         </div>
 
-        {restaurants.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center text-gray-600">
-            No restaurants found. Try another city or check back soon.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {restaurants.map((restaurant) => (
-              <Link
-                key={restaurant.id}
-                href={`/restaurants/${restaurant.slug}`}
-                className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-lg"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      {restaurant.name}
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {restaurant.address}, {restaurant.city}
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-600">
-                    ⭐ {restaurant.averageRating.toFixed(1)}
-                  </span>
-                </div>
-                <p className="mt-4 text-sm text-gray-600 line-clamp-3">
-                  {restaurant.description || 'No description available yet.'}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
+        <RestaurantGrid
+          restaurants={restaurants.map((restaurant) => ({
+            id: restaurant.id,
+            name: restaurant.name,
+            slug: restaurant.slug,
+            averageRating: restaurant.averageRating,
+            totalReviews: restaurant.totalReviews,
+            city: restaurant.city,
+            address: restaurant.address,
+            description: restaurant.description ?? 'No description available yet.',
+          }))}
+          emptyState="No restaurants found. Try another city or check back soon."
+        />
       </div>
     </main>
   )
