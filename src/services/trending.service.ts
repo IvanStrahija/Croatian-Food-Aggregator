@@ -129,15 +129,42 @@ export async function getTrendingRestaurants(
     },
   })
 
+  const restaurantReviewCounts = await prisma.review.groupBy({
+    by: ['restaurantId'],
+    where: {
+      restaurantId: {
+        in: restaurants.map((restaurant) => restaurant.id),
+        not: null,
+      },
+      createdAt: {
+        gte: sevenDaysAgo,
+      },
+    },
+    _count: {
+      _all: true,
+    },
+  })
+
+  const restaurantReviewCountMap = restaurantReviewCounts.reduce<Record<string, number>>(
+    (acc, item) => {
+      if (item.restaurantId) {
+        acc[item.restaurantId] = item._count._all
+      }
+      return acc
+    },
+    {}
+  )
+
   // Calculate scores and format
   const trending = restaurants
     .map(restaurant => {
       const views = restaurant._count.viewEvents
       const favorites = restaurant._count.favorites
-      const reviews = restaurant.dishes.reduce(
+      const dishReviews = restaurant.dishes.reduce(
         (sum, dish) => sum + dish._count.reviews,
         0
       )
+      const reviews = dishReviews + (restaurantReviewCountMap[restaurant.id] ?? 0)
 
       const trendingScore = calculateTrendingScore(
         views,

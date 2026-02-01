@@ -82,16 +82,16 @@ export default async function DishDetailPage({ params }: DishDetailPageProps) {
         </section>
 
         <DishReviews
-	  dishId={dish.id}
+          dishId={dish.id}
           dishName={dish.name}
           restaurantName={dish.restaurant.name}
           reviews={dish.reviews.map((review) => ({
-	    id: review.id,
+            id: review.id,
             rating: review.rating,
             title: review.title,
             comment: review.comment,
-            dishName: dish.name,
-            restaurantName: dish.restaurant.name,
+            subjectName: dish.name,
+            subtitle: dish.restaurant.name,
             createdAt: review.createdAt.toISOString(),
           }))}
         />

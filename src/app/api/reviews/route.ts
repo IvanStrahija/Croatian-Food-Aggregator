@@ -6,11 +6,15 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
 const createReviewSchema = z.object({
-  dishId: z.string().min(1),
+  dishId: z.string().min(1).optional(),
+  restaurantId: z.string().min(1).optional(),
   rating: z.number().int().min(1).max(5),
   title: z.string().optional(),
   comment: z.string().optional(),
-})
+}).refine(
+  (data) => (data.dishId && !data.restaurantId) || (!data.dishId && data.restaurantId),
+  { message: 'Provide either a dishId or restaurantId.' }
+)
 
 async function updateDishRating(dishId: string) {
   const aggregate = await prisma.review.aggregate({
@@ -28,7 +32,33 @@ async function updateDishRating(dishId: string) {
   })
 }
 
+async function updateRestaurantRating(restaurantId: string) {
+  const aggregate = await prisma.review.aggregate({
+    where: {
+      OR: [
+        { restaurantId },
+        {
+          dish: {
+            restaurantId,
+          },
+        },
+      ],
+    },
+    _avg: { rating: true },
+    _count: { rating: true },
+  })
+
+  await prisma.restaurant.update({
+    where: { id: restaurantId },
+    data: {
+      averageRating: aggregate._avg.rating || 0,
+      totalReviews: aggregate._count.rating,
+    },
+  })
+}
+
 export async function POST(request: NextRequest) {
+  let reviewTarget: 'dish' | 'restaurant' | null = null
   try {
     const session = await getServerSession(authOptions)
 
@@ -46,19 +76,51 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { dishId, rating, title, comment } = validation.data
+    const { dishId, restaurantId, rating, title, comment } = validation.data
+    reviewTarget = dishId ? 'dish' : 'restaurant'
     
-    const dish = await prisma.dish.findUnique({
-      where: { id: dishId },
+    if (dishId) {
+      const dish = await prisma.dish.findUnique({
+        where: { id: dishId },
+        select: { id: true, restaurantId: true },
+      })
+
+      if (!dish) {
+        return NextResponse.json({ success: false, error: 'Dish not found' }, { status: 404 })
+      }
+
+      const review = await prisma.review.create({
+        data: {
+          dishId,
+          rating,
+          title,
+          comment,
+          userId: session.user.id,
+        },
+      })
+
+      try {
+        await updateDishRating(dishId)
+        await updateRestaurantRating(dish.restaurantId)
+      } catch (ratingError) {
+        console.error('Failed to update dish rating:', ratingError)
+      }
+
+      return NextResponse.json({ success: true, data: review })
+    }
+
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id: restaurantId },
       select: { id: true },
     })
 
-    if (!dish) {
-      return NextResponse.json({ success: false, error: 'Dish not found' }, { status: 404 })
+    if (!restaurant) {
+      return NextResponse.json({ success: false, error: 'Restaurant not found' }, { status: 404 })
     }
+
     const review = await prisma.review.create({
       data: {
-        dishId,
+        restaurantId,
         rating,
         title,
         comment,
@@ -67,9 +129,9 @@ export async function POST(request: NextRequest) {
     })
 
     try {
-      await updateDishRating(dishId)
+      await updateRestaurantRating(restaurant.id)
     } catch (ratingError) {
-      console.error('Failed to update dish rating:', ratingError)
+      console.error('Failed to update restaurant rating:', ratingError)
     }
 
     return NextResponse.json({ success: true, data: review })
@@ -77,14 +139,22 @@ export async function POST(request: NextRequest) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
         return NextResponse.json(
-          { success: false, error: 'You have already reviewed this dish.' },
+          {
+            success: false,
+            error: reviewTarget === 'dish'
+              ? 'You have already reviewed this dish.'
+              : 'You have already reviewed this restaurant.',
+          },
           { status: 409 }
         )
       }
 
       if (error.code === 'P2003') {
         return NextResponse.json(
-          { success: false, error: 'Dish not found' },
+          {
+            success: false,
+            error: reviewTarget === 'dish' ? 'Dish not found' : 'Restaurant not found',
+          },
           { status: 404 }
         )
       }

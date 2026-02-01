@@ -222,32 +222,52 @@ async function main() {
     },
   ]
 
-  for (const review of reviews) {
-    await prisma.review.create({
-      data: review,
-    })
-    console.log('✅ Created review')
-  }
+  await prisma.review.createMany({
+    data: reviews,
+    skipDuplicates: true,
+  })
+  console.log('✅ Created reviews')
+
+  const restaurantReviews = [
+    {
+      userId: user.id,
+      restaurantId: createdRestaurants[0].id,
+      rating: 5,
+      title: 'Lovely atmosphere',
+      comment: 'Friendly staff and cozy setting. Would visit again!',
+    },
+  ]
+
+  await prisma.review.createMany({
+    data: restaurantReviews,
+    skipDuplicates: true,
+  })
+  console.log('✅ Created restaurant reviews')
 
   // Update restaurant ratings
   for (const restaurant of createdRestaurants) {
-    const dishReviews = await prisma.review.findMany({
+    const restaurantReviews = await prisma.review.findMany({
       where: {
-        dish: {
-          restaurantId: restaurant.id,
-        },
+        OR: [
+          { restaurantId: restaurant.id },
+          {
+            dish: {
+              restaurantId: restaurant.id,
+            },
+          },
+        ],
       },
     })
 
-    if (dishReviews.length > 0) {
+    if (restaurantReviews.length > 0) {
       const avgRating =
-        dishReviews.reduce((sum, r) => sum + r.rating, 0) / dishReviews.length
+        restaurantReviews.reduce((sum, r) => sum + r.rating, 0) / restaurantReviews.length
 
       await prisma.restaurant.update({
         where: { id: restaurant.id },
         data: {
           averageRating: avgRating,
-          totalReviews: dishReviews.length,
+          totalReviews: restaurantReviews.length,
         },
       })
     }
