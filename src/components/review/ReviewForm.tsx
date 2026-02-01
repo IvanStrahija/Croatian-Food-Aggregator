@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/Input'
 interface ReviewFormProps {
   dishId: string
   dishName: string
-  onSubmitted?: (review: ReviewSubmissionResult) => void
+  onSubmitted?: (review?: ReviewSubmissionResult) => void
 }
 
 interface ReviewSubmissionResult {
@@ -50,20 +50,30 @@ export function ReviewForm({ dishId, dishName, onSubmitted }: ReviewFormProps) {
 
       const data = await response.json().catch(() => null)
 
-      if (!response.ok || !data?.success) {
+      if (!response.ok) {
+        setError(data?.error ?? 'Failed to submit review.')
+        return
+      }
+
+      if (data?.success === false) {
         setError(data?.error ?? 'Failed to submit review.')
         return
       }
 
       event.currentTarget.reset()
       setSuccessMessage('Review submitted.')
-      onSubmitted?.({
-        id: data.data.id,
-        rating: data.data.rating,
-        title: data.data.title,
-        comment: data.data.comment,
-        createdAt: data.data.createdAt,
-      })
+      
+      if (data?.data) {
+        onSubmitted?.({
+          id: data.data.id,
+          rating: data.data.rating,
+          title: data.data.title,
+          comment: data.data.comment,
+          createdAt: data.data.createdAt,
+        })
+      } else {
+        onSubmitted?.()
+      }
     } catch (submitError) {
       console.error('Failed to submit review:', submitError)
       setError('Failed to submit review.')

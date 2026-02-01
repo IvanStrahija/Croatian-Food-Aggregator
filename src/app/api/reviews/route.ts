@@ -66,7 +66,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    await updateDishRating(dishId)
+    try {
+      await updateDishRating(dishId)
+    } catch (ratingError) {
+      console.error('Failed to update dish rating:', ratingError)
+    }
 
     return NextResponse.json({ success: true, data: review })
   } catch (error) {

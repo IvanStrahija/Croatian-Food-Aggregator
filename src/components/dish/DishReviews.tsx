@@ -16,6 +16,7 @@ interface DishReviewsProps {
 }
 
 export function DishReviews({ dishId, dishName, restaurantName, reviews }: DishReviewsProps) {
+  const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [items, setItems] = React.useState(reviews)
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
@@ -54,26 +55,29 @@ export function DishReviews({ dishId, dishName, restaurantName, reviews }: DishR
           dishId={dishId}
           dishName={dishName}
           onSubmitted={(review) => {
-            setItems((current) => {
-              if (current.some((item) => item.id === review.id)) {
-                return current
-              }
+            if (review) {
+              setItems((current) => {
+                if (current.some((item) => item.id === review.id)) {
+                  return current
+                }
 
               return [
-                {
-                  id: review.id,
-                  rating: review.rating,
-                  title: review.title,
-                  comment: review.comment,
-                  dishName,
-                  restaurantName,
-                  createdAt: review.createdAt,
-                },
-                ...current,
-              ]
-            })
+                  {
+                    id: review.id,
+                    rating: review.rating,
+                    title: review.title,
+                    comment: review.comment,
+                    dishName,
+                    restaurantName,
+                    createdAt: review.createdAt,
+                  },
+                  ...current,
+                ]
+              })
+            }
             setSuccessMessage('Review submitted.')
             setOpen(false)
+            router.refresh()
           }}
         />
       </Modal>
