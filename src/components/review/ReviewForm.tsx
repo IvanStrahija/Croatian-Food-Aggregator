@@ -25,11 +25,12 @@ export function ReviewForm({ dishId, dishName, onSubmitted }: ReviewFormProps) {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    const form = event.currentTarget
     setError(null)
     setSuccessMessage(null)
     setIsSubmitting(true)
 
-    const formData = new FormData(event.currentTarget)
+    const formData = new FormData(form)
     const rating = Number(formData.get('rating'))
     const titleValue = String(formData.get('title') || '').trim()
     const commentValue = String(formData.get('comment') || '').trim()
@@ -60,7 +61,7 @@ export function ReviewForm({ dishId, dishName, onSubmitted }: ReviewFormProps) {
         return
       }
 
-      event.currentTarget.reset()
+      form.reset()
       setSuccessMessage('Review submitted.')
       
       if (data?.data) {
