@@ -222,12 +222,11 @@ async function main() {
     },
   ]
 
-  for (const review of reviews) {
-    await prisma.review.create({
-      data: review,
-    })
-    console.log('✅ Created review')
-  }
+  await prisma.review.createMany({
+    data: reviews,
+    skipDuplicates: true,
+  })
+  console.log('✅ Created reviews')
 
   const restaurantReviews = [
     {
@@ -239,12 +238,11 @@ async function main() {
     },
   ]
 
-  for (const review of restaurantReviews) {
-    await prisma.review.create({
-      data: review,
-    })
-    console.log('✅ Created restaurant review')
-  }
+  await prisma.review.createMany({
+    data: restaurantReviews,
+    skipDuplicates: true,
+  })
+  console.log('✅ Created restaurant reviews')
 
   // Update restaurant ratings
   for (const restaurant of createdRestaurants) {
