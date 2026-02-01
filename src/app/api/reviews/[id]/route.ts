@@ -26,6 +26,31 @@ async function updateDishRating(dishId: string) {
   })
 }
 
+async function updateRestaurantRating(restaurantId: string) {
+  const aggregate = await prisma.review.aggregate({
+    where: {
+      OR: [
+        { restaurantId },
+        {
+          dish: {
+            restaurantId,
+          },
+        },
+      ],
+    },
+    _avg: { rating: true },
+    _count: { rating: true },
+  })
+
+  await prisma.restaurant.update({
+    where: { id: restaurantId },
+    data: {
+      averageRating: aggregate._avg.rating || 0,
+      totalReviews: aggregate._count.rating,
+    },
+  })
+}
+
 interface RouteParams {
   params: {
     id: string
@@ -52,6 +77,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     const existingReview = await prisma.review.findUnique({
       where: { id: params.id },
+      include: {
+        dish: {
+          select: {
+            restaurantId: true,
+          },
+        },
+      },
     })
 
     if (!existingReview) {
@@ -70,7 +102,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     })
 
-    await updateDishRating(existingReview.dishId)
+    if (existingReview.dishId) {
+      await updateDishRating(existingReview.dishId)
+      if (existingReview.dish?.restaurantId) {
+        await updateRestaurantRating(existingReview.dish.restaurantId)
+      }
+    }
+
+    if (existingReview.restaurantId) {
+      await updateRestaurantRating(existingReview.restaurantId)
+    }
 
     return NextResponse.json({ success: true, data: review })
   } catch (error) {
@@ -89,6 +130,13 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
 
     const existingReview = await prisma.review.findUnique({
       where: { id: params.id },
+      include: {
+        dish: {
+          select: {
+            restaurantId: true,
+          },
+        },
+      },
     })
 
     if (!existingReview) {
@@ -103,7 +151,16 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       where: { id: params.id },
     })
 
-    await updateDishRating(existingReview.dishId)
+    if (existingReview.dishId) {
+      await updateDishRating(existingReview.dishId)
+      if (existingReview.dish?.restaurantId) {
+        await updateRestaurantRating(existingReview.dish.restaurantId)
+      }
+    }
+
+    if (existingReview.restaurantId) {
+      await updateRestaurantRating(existingReview.restaurantId)
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

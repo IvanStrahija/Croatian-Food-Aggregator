@@ -8,14 +8,19 @@ import { ReviewForm } from '@/components/review/ReviewForm'
 import { ReviewList } from '@/components/review/ReviewList'
 import { ReviewSummary } from '@/components/review/ReviewCard'
 
-interface DishReviewsProps {
-  dishId: string
-  dishName: string
+interface RestaurantReviewsProps {
+  restaurantId: string
   restaurantName: string
+  restaurantSubtitle?: string
   reviews: ReviewSummary[]
 }
 
-export function DishReviews({ dishId, dishName, restaurantName, reviews }: DishReviewsProps) {
+export function RestaurantReviews({
+  restaurantId,
+  restaurantName,
+  restaurantSubtitle,
+  reviews,
+}: RestaurantReviewsProps) {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [items, setItems] = React.useState(reviews)
@@ -24,12 +29,13 @@ export function DishReviews({ dishId, dishName, restaurantName, reviews }: DishR
   React.useEffect(() => {
     setItems(reviews)
   }, [reviews])
+
   return (
-    <section className="mt-8">
+    <section className="mt-10">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Reviews</h2>
-          <p className="text-sm text-gray-500">Share your experience with {dishName}.</p>
+          <h2 className="text-2xl font-bold text-gray-900">Restaurant reviews</h2>
+          <p className="text-sm text-gray-500">Share your experience with {restaurantName}.</p>
         </div>
         <Button variant="outline" onClick={() => setOpen(true)}>
           Write a review
@@ -48,13 +54,13 @@ export function DishReviews({ dishId, dishName, restaurantName, reviews }: DishR
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        title={`Review ${dishName}`}
-        description="Your feedback helps other food lovers discover the best dishes."
+        title={`Review ${restaurantName}`}
+        description="Your feedback helps other diners discover great restaurants."
       >
         <ReviewForm
-          subjectId={dishId}
-          subjectName={dishName}
-          subjectType="dish"
+          subjectId={restaurantId}
+          subjectName={restaurantName}
+          subjectType="restaurant"
           onSubmitted={(review) => {
             if (review) {
               setItems((current) => {
@@ -68,8 +74,8 @@ export function DishReviews({ dishId, dishName, restaurantName, reviews }: DishR
                     rating: review.rating,
                     title: review.title,
                     comment: review.comment,
-                    subjectName: dishName,
-                    subtitle: restaurantName,
+                    subjectName: restaurantName,
+                    subtitle: restaurantSubtitle,
                     createdAt: review.createdAt,
                   },
                   ...current,

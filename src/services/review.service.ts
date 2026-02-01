@@ -2,7 +2,8 @@ import { prisma } from '@/lib/prisma'
 
 export async function createReview(data: {
   userId: string
-  dishId: string
+  dishId?: string
+  restaurantId?: string
   rating: number
   comment?: string
 }) {
@@ -10,6 +11,7 @@ export async function createReview(data: {
     data: {
       userId: data.userId,
       dishId: data.dishId,
+      restaurantId: data.restaurantId,
       rating: data.rating,
       comment: data.comment,
     },

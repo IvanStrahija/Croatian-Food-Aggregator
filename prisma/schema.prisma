@@ -103,6 +103,7 @@ model Restaurant {
   serviceLinks         RestaurantServiceLink[]
   viewEvents           ViewEvent[]
   favorites            Favorite[]
+  reviews              Review[]
 
   @@index([slug])
   @@index([city])
@@ -198,7 +199,8 @@ model DishPrice {
 model Review {
   id        String   @id @default(cuid())
   userId    String
-  dishId    String
+  dishId    String?
+  restaurantId String?
   rating    Int // 1-5 stars
   title     String?
   comment   String?  @db.Text
@@ -208,10 +210,13 @@ model Review {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dish Dish @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  dish Dish? @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@unique([userId, dishId]) // One review per user per dish
+  @@unique([userId, restaurantId]) // One review per user per restaurant
   @@index([dishId])
+  @@index([restaurantId])
   @@index([userId])
   @@index([rating])
   @@index([createdAt])

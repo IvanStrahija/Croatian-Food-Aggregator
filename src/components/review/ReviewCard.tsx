@@ -6,8 +6,8 @@ export interface ReviewSummary {
   rating: number
   title?: string | null
   comment?: string | null
-  dishName: string
-  restaurantName: string
+  subjectName: string
+  subtitle?: string
   createdAt: string
 }
 
@@ -21,8 +21,8 @@ export function ReviewCard({ review }: ReviewCardProps) {
     <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">{review.dishName}</h3>
-          <p className="text-sm text-gray-500">{review.restaurantName}</p>
+          <h3 className="text-lg font-semibold text-gray-900">{review.subjectName}</h3>
+          {review.subtitle && <p className="text-sm text-gray-500">{review.subtitle}</p>}
         </div>
         <Rating value={review.rating} label={formatRelativeDate(createdAt)} />
       </div>

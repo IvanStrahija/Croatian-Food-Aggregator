@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { DishGrid } from '@/components/dish/DishGrid'
+import { RestaurantReviews } from '@/components/restaurant/RestaurantReviews'
 
 interface RestaurantDetailPageProps {
   params: {
@@ -20,6 +21,10 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
             orderBy: { updatedAt: 'desc' },
           },
         },
+      },
+      reviews: {
+        orderBy: { createdAt: 'desc' },
+        take: 6,
       },
     },
   })
@@ -76,6 +81,21 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
             />
           </div>
         </section>
+
+        <RestaurantReviews
+          restaurantId={restaurant.id}
+          restaurantName={restaurant.name}
+          restaurantSubtitle={`${restaurant.address}, ${restaurant.city}`}
+          reviews={restaurant.reviews.map((review) => ({
+            id: review.id,
+            rating: review.rating,
+            title: review.title,
+            comment: review.comment,
+            subjectName: restaurant.name,
+            subtitle: `${restaurant.address}, ${restaurant.city}`,
+            createdAt: review.createdAt.toISOString(),
+          }))}
+        />
       </div>
     </main>
   )

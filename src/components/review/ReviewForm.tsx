@@ -4,9 +4,12 @@ import * as React from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 
+type ReviewSubjectType = 'dish' | 'restaurant'
+
 interface ReviewFormProps {
-  dishId: string
-  dishName: string
+  subjectId: string
+  subjectName: string
+  subjectType: ReviewSubjectType
   onSubmitted?: (review?: ReviewSubmissionResult) => void
 }
 
@@ -18,7 +21,7 @@ interface ReviewSubmissionResult {
   createdAt: string
 }
 
-export function ReviewForm({ dishId, dishName, onSubmitted }: ReviewFormProps) {
+export function ReviewForm({ subjectId, subjectName, subjectType, onSubmitted }: ReviewFormProps) {
   const [error, setError] = React.useState<string | null>(null)
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -42,7 +45,7 @@ export function ReviewForm({ dishId, dishName, onSubmitted }: ReviewFormProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          dishId,
+          ...(subjectType === 'dish' ? { dishId: subjectId } : { restaurantId: subjectId }),
           rating,
           title: titleValue || undefined,
           comment: commentValue || undefined,
@@ -86,8 +89,10 @@ export function ReviewForm({ dishId, dishName, onSubmitted }: ReviewFormProps) {
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div>
-        <label className="text-sm font-medium text-gray-700">Dish</label>
-        <Input value={dishName} readOnly className="mt-1" />
+        <label className="text-sm font-medium text-gray-700">
+          {subjectType === 'dish' ? 'Dish' : 'Restaurant'}
+        </label>
+        <Input value={subjectName} readOnly className="mt-1" />
       </div>
       <div>
         <label htmlFor="rating" className="text-sm font-medium text-gray-700">Rating</label>

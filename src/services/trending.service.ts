@@ -109,6 +109,13 @@ export async function getTrendingRestaurants(
               },
             },
           },
+          reviews: {
+            where: {
+              createdAt: {
+                gte: sevenDaysAgo,
+              },
+            },
+          },
         },
       },
       dishes: {
@@ -134,10 +141,11 @@ export async function getTrendingRestaurants(
     .map(restaurant => {
       const views = restaurant._count.viewEvents
       const favorites = restaurant._count.favorites
-      const reviews = restaurant.dishes.reduce(
+      const dishReviews = restaurant.dishes.reduce(
         (sum, dish) => sum + dish._count.reviews,
         0
       )
+      const reviews = dishReviews + restaurant._count.reviews
 
       const trendingScore = calculateTrendingScore(
         views,
