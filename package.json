@@ -14,12 +14,13 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:seed": "prisma generate && tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "import:csv": "tsx scripts/import-csv.ts",
+    "import:geojson": "tsx scripts/import-geojson.ts",
     "sync:connectors": "tsx scripts/sync-connectors.ts"
   },
   "dependencies": {

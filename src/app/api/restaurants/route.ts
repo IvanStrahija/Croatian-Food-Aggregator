@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import { NextResponse, type NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -140,8 +141,9 @@ export async function POST(request: NextRequest) {
       data: {
         ...restaurantData,
         latitude,
-	longitude,
-	slug,
+        longitude,
+        slug,
+        osmId: `manual-${randomUUID()}`,
         verified: true,
         status: 'ACTIVE',
         dishes: dishes && dishes.length > 0 ? {

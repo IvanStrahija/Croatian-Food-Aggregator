@@ -80,6 +80,7 @@ model VerificationToken {
 // Restaurant model
 model Restaurant {
   id               String    @id @default(cuid())
+  osmId            String    @unique
   name             String
   slug             String    @unique
   description      String?   @db.Text
@@ -91,6 +92,7 @@ model Restaurant {
   longitude        Float?
   phoneNumber      String?
   website          String?
+  openingHours     String?
   imageUrl         String?
   averageRating    Float     @default(0)
   totalReviews     Int       @default(0)

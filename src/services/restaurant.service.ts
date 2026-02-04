@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { createSlug } from '@/lib/utils'
 
@@ -28,6 +29,7 @@ export async function createRestaurant(data: {
 }) {
   return prisma.restaurant.create({
     data: {
+      osmId: `manual-${randomUUID()}`,
       name: data.name,
       slug: createSlug(data.name),
       description: data.description,

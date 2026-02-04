@@ -150,6 +150,7 @@ export abstract class BaseConnector implements IDataConnector {
       const slug = createSlug(data.name)
       const restaurant = await prisma.restaurant.create({
         data: {
+          osmId: `${this.service.toLowerCase()}-${data.externalId}`,
           name: data.name,
           slug,
           description: data.description,

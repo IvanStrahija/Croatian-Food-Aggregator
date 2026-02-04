@@ -104,15 +104,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <div className="text-center text-sm text-gray-500">
-              <p className="mb-2">Test Credentials:</p>
-              <p className="font-mono text-xs">
-                User: test@example.com / user123<br />
-                Admin: admin@foodaggregator.hr / admin123
-              </p>
-            </div>
-          </div>
         </div>
 
         <div className="mt-6 text-center">
