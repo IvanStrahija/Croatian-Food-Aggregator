@@ -20,9 +20,10 @@ interface MapViewProps {
   markers?: MapMarker[]
   containerClassName?: string
   mapClassName?: string
+  zoom?: number
 }
 
-export function MapView({ markers = [], containerClassName, mapClassName }: MapViewProps) {
+export function MapView({ markers = [], containerClassName, mapClassName, zoom = 12 }: MapViewProps) {
   useEffect(() => {
     const iconRetinaUrl = typeof markerIcon2x === 'string' ? markerIcon2x : markerIcon2x.src
     const iconUrl = typeof markerIcon === 'string' ? markerIcon : markerIcon.src
@@ -53,7 +54,7 @@ export function MapView({ markers = [], containerClassName, mapClassName }: MapV
   return (
      <div className={`mt-8 rounded-lg border border-gray-200 bg-white p-4 shadow-sm ${containerClassName ?? ''}`.trim()}>
       <div className={`h-[32rem] w-full overflow-hidden rounded-lg ${mapClassName ?? ''}`.trim()}>
-        <MapContainer center={center} zoom={12} scrollWheelZoom className="h-full w-full">
+        <MapContainer center={center} zoom={zoom} scrollWheelZoom className="h-full w-full">
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"

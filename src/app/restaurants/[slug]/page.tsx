@@ -84,6 +84,7 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
                   longitude: restaurant.longitude ?? 0,
                 },
               ]}
+              zoom={15}
               containerClassName="mt-6"
               mapClassName="h-72"
             />
