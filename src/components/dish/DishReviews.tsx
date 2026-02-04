@@ -70,6 +70,7 @@ export function DishReviews({ dishId, dishName, restaurantName, reviews }: DishR
                     comment: review.comment,
                     subjectName: dishName,
                     subtitle: restaurantName,
+                    username: review.username,
                     createdAt: review.createdAt,
                   },
                   ...current,

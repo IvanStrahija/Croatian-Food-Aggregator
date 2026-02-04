@@ -18,6 +18,7 @@ interface ReviewSubmissionResult {
   rating: number
   title: string | null
   comment: string | null
+  username: string
   createdAt: string
 }
 
@@ -73,6 +74,7 @@ export function ReviewForm({ subjectId, subjectName, subjectType, onSubmitted }:
           rating: data.data.rating,
           title: data.data.title,
           comment: data.data.comment,
+          username: data.data.username,
           createdAt: data.data.createdAt,
         })
       } else {

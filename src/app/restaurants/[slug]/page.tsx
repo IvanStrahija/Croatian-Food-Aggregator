@@ -25,6 +25,14 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
       reviews: {
         orderBy: { createdAt: 'desc' },
         take: 6,
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
       },
     },
   })
@@ -93,6 +101,7 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
             comment: review.comment,
             subjectName: restaurant.name,
             subtitle: `${restaurant.address}, ${restaurant.city}`,
+            username: review.user.name ?? review.user.email ?? 'Anonymous',
             createdAt: review.createdAt.toISOString(),
           }))}
         />

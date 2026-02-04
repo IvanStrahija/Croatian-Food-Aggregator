@@ -76,6 +76,7 @@ export function RestaurantReviews({
                     comment: review.comment,
                     subjectName: restaurantName,
                     subtitle: restaurantSubtitle,
+                    username: review.username,
                     createdAt: review.createdAt,
                   },
                   ...current,
