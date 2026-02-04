@@ -97,6 +97,14 @@ export async function POST(request: NextRequest) {
           comment,
           userId: session.user.id,
         },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
       })
 
       try {
@@ -106,7 +114,13 @@ export async function POST(request: NextRequest) {
         console.error('Failed to update dish rating:', ratingError)
       }
 
-      return NextResponse.json({ success: true, data: review })
+      return NextResponse.json({
+        success: true,
+        data: {
+          ...review,
+          username: review.user.name ?? review.user.email ?? 'Anonymous',
+        },
+      })
     }
 
     const restaurant = await prisma.restaurant.findUnique({
@@ -126,6 +140,14 @@ export async function POST(request: NextRequest) {
         comment,
         userId: session.user.id,
       },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
     })
 
     try {
@@ -134,7 +156,13 @@ export async function POST(request: NextRequest) {
       console.error('Failed to update restaurant rating:', ratingError)
     }
 
-    return NextResponse.json({ success: true, data: review })
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...review,
+        username: review.user.name ?? review.user.email ?? 'Anonymous',
+      },
+    })
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {

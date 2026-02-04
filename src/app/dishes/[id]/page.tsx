@@ -29,6 +29,14 @@ export default async function DishDetailPage({ params }: DishDetailPageProps) {
       reviews: {
         orderBy: { createdAt: 'desc' },
         take: 6,
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
       },
     },
   })
@@ -92,6 +100,7 @@ export default async function DishDetailPage({ params }: DishDetailPageProps) {
             comment: review.comment,
             subjectName: dish.name,
             subtitle: dish.restaurant.name,
+            username: review.user.name ?? review.user.email ?? 'Anonymous',
             createdAt: review.createdAt.toISOString(),
           }))}
         />

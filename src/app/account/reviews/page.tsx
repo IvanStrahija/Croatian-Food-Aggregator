@@ -27,6 +27,12 @@ export default async function AccountReviewsPage() {
   const reviews = await prisma.review.findMany({
     where: { userId: session.user.id },
     include: {
+      user: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
       dish: {
         include: {
           restaurant: true,
@@ -56,6 +62,7 @@ export default async function AccountReviewsPage() {
                 : review.restaurant
                   ? `${review.restaurant.city}${review.restaurant.address ? ` · ${review.restaurant.address}` : ''}`
                   : undefined,
+              username: review.user.name ?? review.user.email ?? 'Anonymous',
               createdAt: review.createdAt.toISOString(),
             }))}
             emptyState="You have not posted any reviews yet."

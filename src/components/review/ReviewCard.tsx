@@ -8,6 +8,7 @@ export interface ReviewSummary {
   comment?: string | null
   subjectName: string
   subtitle?: string
+  username: string
   createdAt: string
 }
 
@@ -23,6 +24,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
         <div>
           <h3 className="text-lg font-semibold text-gray-900">{review.subjectName}</h3>
           {review.subtitle && <p className="text-sm text-gray-500">{review.subtitle}</p>}
+          <p className="text-sm text-gray-500">By {review.username}</p>
         </div>
         <Rating value={review.rating} label={formatRelativeDate(createdAt)} />
       </div>
