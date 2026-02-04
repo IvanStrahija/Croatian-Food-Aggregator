@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo } from 'react'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { useEffect, useMemo, useState } from 'react'
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
@@ -36,14 +36,24 @@ export function MapView({ markers = [], containerClassName, mapClassName, zoom =
     })
   }, [])
 
-  const limitedMarkers = useMemo(() => markers.slice(0, 50), [markers])
+  const [bounds, setBounds] = useState<L.LatLngBounds | null>(null)
+
+  const visibleMarkers = useMemo(() => {
+    if (!bounds) {
+      return markers.slice(0, 50)
+    }
+
+    return markers
+      .filter((marker) => bounds.contains(L.latLng(marker.latitude, marker.longitude)))
+      .slice(0, 50)
+  }, [bounds, markers])
 
   const center = useMemo(() => {
-    if (limitedMarkers.length === 0) {
+    if (markers.length === 0) {
       return [45.815, 15.9819] as [number, number]
     }
 
-    const { latSum, lngSum } = limitedMarkers.reduce(
+    const { latSum, lngSum } = markers.reduce(
       (acc, marker) => ({
         latSum: acc.latSum + marker.latitude,
         lngSum: acc.lngSum + marker.longitude,
@@ -51,8 +61,8 @@ export function MapView({ markers = [], containerClassName, mapClassName, zoom =
       { latSum: 0, lngSum: 0 }
     )
 
-    return [latSum / limitedMarkers.length, lngSum / limitedMarkers.length] as [number, number]
-  }, [limitedMarkers])
+    return [latSum / markers.length, lngSum / markers.length] as [number, number]
+  }, [markers])
   return (
      <div className={`mt-8 rounded-lg border border-gray-200 bg-white p-4 shadow-sm ${containerClassName ?? ''}`.trim()}>
       <div className={`h-[32rem] w-full overflow-hidden rounded-lg ${mapClassName ?? ''}`.trim()}>
@@ -61,7 +71,8 @@ export function MapView({ markers = [], containerClassName, mapClassName, zoom =
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
           />
-          {limitedMarkers.map((marker) => (
+          <MapBoundsListener onBoundsChange={setBounds} />
+          {visibleMarkers.map((marker) => (
             <Marker
               key={marker.id}
               position={[marker.latitude, marker.longitude]}
@@ -81,11 +92,28 @@ export function MapView({ markers = [], containerClassName, mapClassName, zoom =
           ))}
         </MapContainer>
       </div>
-      {limitedMarkers.length === 0 && (
+      {markers.length === 0 && (
         <p className="mt-4 text-center text-sm text-gray-500">
           No restaurants with location data yet. Add latitude and longitude to see pins here.
         </p>
       )}
     </div>
   )
+}
+
+interface MapBoundsListenerProps {
+  onBoundsChange: (bounds: L.LatLngBounds) => void
+}
+
+function MapBoundsListener({ onBoundsChange }: MapBoundsListenerProps) {
+  const map = useMapEvents({
+    moveend: () => onBoundsChange(map.getBounds()),
+    zoomend: () => onBoundsChange(map.getBounds()),
+  })
+
+  useEffect(() => {
+    onBoundsChange(map.getBounds())
+  }, [map, onBoundsChange])
+
+  return null
 }
