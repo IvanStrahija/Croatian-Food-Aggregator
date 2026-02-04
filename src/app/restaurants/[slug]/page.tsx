@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { DishGrid } from '@/components/dish/DishGrid'
+import { MapView } from '@/components/map/MapView'
 import { RestaurantReviews } from '@/components/restaurant/RestaurantReviews'
 
 interface RestaurantDetailPageProps {
@@ -41,6 +42,8 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
     notFound()
   }
 
+  const hasLocation = restaurant.latitude !== null && restaurant.longitude !== null
+
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-10">
@@ -63,6 +66,33 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
             <p className="mt-4 text-gray-700">{restaurant.description}</p>
           )}
         </div>
+
+        <section className="mt-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">Location</h2>
+            <span className="text-sm text-gray-500">{restaurant.city}</span>
+          </div>
+          {hasLocation ? (
+            <MapView
+              markers={[
+                {
+                  id: restaurant.id,
+                  name: restaurant.name,
+                  address: restaurant.address,
+                  city: restaurant.city,
+                  latitude: restaurant.latitude ?? 0,
+                  longitude: restaurant.longitude ?? 0,
+                },
+              ]}
+              containerClassName="mt-6"
+              mapClassName="h-72"
+            />
+          ) : (
+            <div className="mt-6 rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-500 shadow-sm">
+              Location details are not available yet.
+            </div>
+          )}
+        </section>
 
         <section className="mt-10">
           <div className="flex items-center justify-between">
