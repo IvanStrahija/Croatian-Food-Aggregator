@@ -67,7 +67,23 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
           )}
         </div>
 
-        <section className="mt-8">
+        <RestaurantReviews
+          restaurantId={restaurant.id}
+          restaurantName={restaurant.name}
+          restaurantSubtitle={`${restaurant.address}, ${restaurant.city}`}
+          reviews={restaurant.reviews.map((review) => ({
+            id: review.id,
+            rating: review.rating,
+            title: review.title,
+            comment: review.comment,
+            subjectName: restaurant.name,
+            subtitle: `${restaurant.address}, ${restaurant.city}`,
+            username: review.user.name ?? review.user.email ?? 'Anonymous',
+            createdAt: review.createdAt.toISOString(),
+          }))}
+        />
+
+        <section className="mt-10">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-gray-900">Location</h2>
             <span className="text-sm text-gray-500">{restaurant.city}</span>
@@ -120,22 +136,6 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
             />
           </div>
         </section>
-
-        <RestaurantReviews
-          restaurantId={restaurant.id}
-          restaurantName={restaurant.name}
-          restaurantSubtitle={`${restaurant.address}, ${restaurant.city}`}
-          reviews={restaurant.reviews.map((review) => ({
-            id: review.id,
-            rating: review.rating,
-            title: review.title,
-            comment: review.comment,
-            subjectName: restaurant.name,
-            subtitle: `${restaurant.address}, ${restaurant.city}`,
-            username: review.user.name ?? review.user.email ?? 'Anonymous',
-            createdAt: review.createdAt.toISOString(),
-          }))}
-        />
       </div>
     </main>
   )
