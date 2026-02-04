@@ -1,14 +1,14 @@
 import { PrismaClient } from '@prisma/client'
 import path from 'node:path'
-import { importGeojson } from '../scripts/import-geojson'
+import { importWolt } from '../scripts/import-wolt'
 
 const prisma = new PrismaClient()
 
 async function main() {
   console.log('🌱 Starting database seed...')
 
-  const geojsonPath = path.join('data', 'Zagreb.geojson')
-  await importGeojson(geojsonPath)
+  const woltPath = path.join('data', 'wolt.json')
+  await importWolt(woltPath)
   console.log('🎉 Seed completed successfully!')
 }
 

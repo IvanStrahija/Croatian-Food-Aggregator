@@ -21,6 +21,7 @@
     "test:coverage": "jest --coverage",
     "import:csv": "tsx scripts/import-csv.ts",
     "import:geojson": "tsx scripts/import-geojson.ts",
+    "import:wolt": "tsx scripts/import-wolt.ts",
     "sync:connectors": "tsx scripts/sync-connectors.ts"
   },
   "dependencies": {

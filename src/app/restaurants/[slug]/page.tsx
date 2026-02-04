@@ -15,6 +15,9 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
   const restaurant = await prisma.restaurant.findUnique({
     where: { slug: params.slug },
     include: {
+      serviceLinks: {
+        where: { service: 'WOLT', isActive: true },
+      },
       dishes: {
         include: {
           prices: {
@@ -42,6 +45,7 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
     notFound()
   }
 
+  const woltLink = restaurant.serviceLinks.find((link) => link.externalUrl)?.externalUrl
   const hasLocation = restaurant.latitude !== null && restaurant.longitude !== null
 
   return (
@@ -60,7 +64,26 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
               <span>{restaurant.totalReviews} reviews</span>
               {restaurant.phoneNumber && <span>📞 {restaurant.phoneNumber}</span>}
               {restaurant.openingHours && <span>🕒 {restaurant.openingHours}</span>}
-	      {restaurant.website && <span>🌐 {restaurant.website}</span>}
+              {restaurant.website && (
+                <a
+                  href={restaurant.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1 text-orange-500 hover:text-orange-600"
+                >
+                  🌐 Website
+                </a>
+              )}
+              {woltLink && (
+                <a
+                  href={woltLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1 text-orange-500 hover:text-orange-600"
+                >
+                  🛵 Wolt
+                </a>
+              )}
             </div>
           </div>
 
