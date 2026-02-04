@@ -119,8 +119,7 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
                 {
                   id: restaurant.id,
                   name: restaurant.name,
-                  address: restaurant.address,
-                  city: restaurant.city,
+                  slug: restaurant.slug,
                   latitude: restaurant.latitude ?? 0,
                   longitude: restaurant.longitude ?? 0,
                 },

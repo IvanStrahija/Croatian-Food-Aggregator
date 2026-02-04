@@ -22,14 +22,13 @@ export default async function MapPage() {
       <div className="container mx-auto px-4 py-10">
         <h1 className="text-3xl font-bold text-gray-900">Map View</h1>
         <p className="mt-2 text-gray-600">
-          Explore restaurants across Croatia and tap a pin to see the address.
+          Explore restaurants across Croatia and tap a pin to open the restaurant page.
         </p>
         <MapView
           markers={restaurants.map((restaurant) => ({
             id: restaurant.id,
             name: restaurant.name,
-            address: restaurant.address,
-            city: restaurant.city,
+            slug: restaurant.slug,
             latitude: restaurant.latitude ?? 0,
             longitude: restaurant.longitude ?? 0,
           }))}

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useMemo } from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
@@ -10,8 +11,7 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 interface MapMarker {
   id: string
   name: string
-  address: string
-  city: string
+  slug: string
   latitude: number
   longitude: number
 }
@@ -36,12 +36,14 @@ export function MapView({ markers = [], containerClassName, mapClassName, zoom =
     })
   }, [])
 
+  const limitedMarkers = useMemo(() => markers.slice(0, 50), [markers])
+
   const center = useMemo(() => {
-    if (markers.length === 0) {
+    if (limitedMarkers.length === 0) {
       return [45.815, 15.9819] as [number, number]
     }
 
-    const { latSum, lngSum } = markers.reduce(
+    const { latSum, lngSum } = limitedMarkers.reduce(
       (acc, marker) => ({
         latSum: acc.latSum + marker.latitude,
         lngSum: acc.lngSum + marker.longitude,
@@ -49,8 +51,8 @@ export function MapView({ markers = [], containerClassName, mapClassName, zoom =
       { latSum: 0, lngSum: 0 }
     )
 
-    return [latSum / markers.length, lngSum / markers.length] as [number, number]
-  }, [markers])
+    return [latSum / limitedMarkers.length, lngSum / limitedMarkers.length] as [number, number]
+  }, [limitedMarkers])
   return (
      <div className={`mt-8 rounded-lg border border-gray-200 bg-white p-4 shadow-sm ${containerClassName ?? ''}`.trim()}>
       <div className={`h-[32rem] w-full overflow-hidden rounded-lg ${mapClassName ?? ''}`.trim()}>
@@ -59,23 +61,27 @@ export function MapView({ markers = [], containerClassName, mapClassName, zoom =
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
           />
-          {markers.map((marker) => (
+          {limitedMarkers.map((marker) => (
             <Marker
               key={marker.id}
               position={[marker.latitude, marker.longitude]}
             >
               <Popup>
-                <div className="space-y-1 text-sm">
+                <div className="space-y-2 text-sm">
                   <p className="font-semibold text-gray-900">{marker.name}</p>
-                  <p className="text-gray-600">{marker.address}</p>
-                  <p className="text-gray-500">{marker.city}</p>
+                  <Link
+                    className="inline-flex items-center justify-center rounded-full bg-orange-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-orange-600"
+                    href={`/restaurants/${marker.slug}`}
+                  >
+                    Open restaurant
+                  </Link>
                 </div>
               </Popup>
             </Marker>
           ))}
         </MapContainer>
       </div>
-      {markers.length === 0 && (
+      {limitedMarkers.length === 0 && (
         <p className="mt-4 text-center text-sm text-gray-500">
           No restaurants with location data yet. Add latitude and longitude to see pins here.
         </p>
