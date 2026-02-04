@@ -60,6 +60,7 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
               <span>{restaurant.totalReviews} reviews</span>
               {restaurant.phoneNumber && <span>📞 {restaurant.phoneNumber}</span>}
               {restaurant.openingHours && <span>🕒 {restaurant.openingHours}</span>}
+	      {restaurant.website && <span>🌐 {restaurant.website}</span>}
             </div>
           </div>
 
