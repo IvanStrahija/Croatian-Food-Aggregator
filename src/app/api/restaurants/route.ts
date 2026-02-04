@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { geocodeAddress } from '@/lib/geocoding'
 import { prisma } from '@/lib/prisma'
 import { createSlug } from '@/lib/utils'
 import { z } from 'zod'
@@ -118,10 +119,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Create restaurant with dishes
+    let latitude = restaurantData.latitude ?? null
+    let longitude = restaurantData.longitude ?? null
+
+    if (latitude === null || longitude === null) {
+      const locationParts = [
+        restaurantData.address,
+        restaurantData.postalCode,
+        restaurantData.city,
+        'Croatia',
+      ].filter(Boolean)
+      const geocoded = await geocodeAddress(locationParts.join(', '))
+
+      if (geocoded) {
+        latitude = geocoded.latitude
+        longitude = geocoded.longitude
+      }
+    }
     const restaurant = await prisma.restaurant.create({
       data: {
         ...restaurantData,
-        slug,
+        latitude,
+	longitude,
+	slug,
         verified: true,
         status: 'ACTIVE',
         dishes: dishes && dishes.length > 0 ? {
