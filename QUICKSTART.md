@@ -39,15 +39,13 @@ docker-compose ps
 # Run migrations
 docker-compose exec app npm run db:migrate
 
-# Seed with sample data
+# Seed the database
 docker-compose exec app npm run db:seed
 ```
 
 ### 4. Access Application
 
 - **App:** http://localhost:3000
-- **Test Login:** test@example.com / user123
-- **Admin Login:** admin@foodaggregator.hr / admin123
 
 ### 5. Development
 

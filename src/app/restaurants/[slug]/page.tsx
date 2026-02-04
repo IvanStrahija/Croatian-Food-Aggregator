@@ -59,6 +59,7 @@ export default async function RestaurantDetailPage({ params }: RestaurantDetailP
               <span>⭐ {restaurant.averageRating.toFixed(1)} rating</span>
               <span>{restaurant.totalReviews} reviews</span>
               {restaurant.phoneNumber && <span>📞 {restaurant.phoneNumber}</span>}
+              {restaurant.openingHours && <span>🕒 {restaurant.openingHours}</span>}
             </div>
           </div>
 

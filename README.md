@@ -67,13 +67,6 @@ docker-compose exec app npm run db:seed
 - **App:** http://localhost:3000
 - **Database Studio:** Run `docker-compose exec app npm run db:studio`
 
-### 4. Test Credentials
-
-```
-Admin: admin@foodaggregator.hr / admin123
-User: test@example.com / user123
-```
-
 ## Alternative Setup (Without Docker)
 
 ### 1. Install PostgreSQL

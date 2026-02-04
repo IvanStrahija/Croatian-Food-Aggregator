@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import { parse } from 'papaparse'
@@ -42,6 +43,7 @@ async function importRestaurants(filePath: string) {
 
     await prisma.restaurant.create({
       data: {
+        osmId: `manual-${randomUUID()}`,
         name: row.name,
         slug: createSlug(row.name),
         description: row.description,

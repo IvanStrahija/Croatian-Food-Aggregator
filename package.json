@@ -20,6 +20,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "import:csv": "tsx scripts/import-csv.ts",
+    "import:geojson": "tsx scripts/import-geojson.ts",
     "sync:connectors": "tsx scripts/sync-connectors.ts"
   },
   "dependencies": {

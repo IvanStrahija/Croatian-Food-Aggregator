@@ -97,10 +97,6 @@ docker-compose exec app npm run db:seed
 open http://localhost:3000
 ```
 
-**Test Credentials:**
-- User: test@example.com / user123
-- Admin: admin@foodaggregator.hr / admin123
-
 ## 📦 What's Included
 
 ### Application Code
