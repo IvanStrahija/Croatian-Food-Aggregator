@@ -47,7 +47,6 @@ export function MapView({ markers = [], containerClassName, mapClassName, zoom =
 
   const [bounds, setBounds] = useState<L.LatLngBounds | null>(null)
   const [mapZoom, setMapZoom] = useState(zoom)
-  const [focusedCluster, setFocusedCluster] = useState<MarkerCluster | null>(null)
 
   const markersInView = useMemo(() => {
     if (!bounds) {
@@ -57,51 +56,67 @@ export function MapView({ markers = [], containerClassName, mapClassName, zoom =
     return markers.filter((marker) => bounds.contains(L.latLng(marker.latitude, marker.longitude)))
   }, [bounds, markers])
 
-  const shouldCluster = markersInView.length > 100 && !focusedCluster
+  const maxPins = 190
+  const shouldCluster = markers.length > maxPins && mapZoom <= zoom
 
   const clusters = useMemo(() => {
-    if (!shouldCluster || !bounds) {
+    if (!shouldCluster || markers.length === 0) {
       return [] as MarkerCluster[]
     }
 
-    const latSpan = bounds.getNorth() - bounds.getSouth()
-    const lngSpan = bounds.getEast() - bounds.getWest()
-    const cellCount = Math.min(8, Math.max(2, Math.ceil(Math.sqrt(markersInView.length / 40))))
-    const latStep = latSpan / cellCount || 0.1
-    const lngStep = lngSpan / cellCount || 0.1
-    const clustersMap = new Map<string, MapMarker[]>()
+    const overallBounds = L.latLngBounds(markers.map((marker) => [marker.latitude, marker.longitude]))
+    const latSpan = overallBounds.getNorth() - overallBounds.getSouth()
+    const lngSpan = overallBounds.getEast() - overallBounds.getWest()
+    let cellCount = Math.min(10, Math.max(2, Math.ceil(Math.sqrt(markers.length / 60))))
+    let clustersResult: MarkerCluster[] = []
+    let maxClusterSize = Infinity
 
-    markersInView.forEach((marker) => {
-      const row = Math.floor((marker.latitude - bounds.getSouth()) / latStep)
-      const col = Math.floor((marker.longitude - bounds.getWest()) / lngStep)
-      const key = `${row}-${col}`
-      const existing = clustersMap.get(key) ?? []
-      existing.push(marker)
-      clustersMap.set(key, existing)
-    })
+    while (cellCount <= 30 && maxClusterSize > maxPins) {
+      const latStep = latSpan / cellCount || 0.1
+      const lngStep = lngSpan / cellCount || 0.1
+      const clustersMap = new Map<string, MapMarker[]>()
 
-    return Array.from(clustersMap.entries()).map(([key, clusterMarkers]) => {
-      const { latSum, lngSum } = clusterMarkers.reduce(
-        (acc, marker) => ({
-          latSum: acc.latSum + marker.latitude,
-          lngSum: acc.lngSum + marker.longitude,
-        }),
-        { latSum: 0, lngSum: 0 }
-      )
-      const latitude = latSum / clusterMarkers.length
-      const longitude = lngSum / clusterMarkers.length
-      const clusterBounds = L.latLngBounds(clusterMarkers.map((marker) => [marker.latitude, marker.longitude]))
+      markers.forEach((marker) => {
+        const row = Math.floor((marker.latitude - overallBounds.getSouth()) / latStep)
+        const col = Math.floor((marker.longitude - overallBounds.getWest()) / lngStep)
+        const key = `${row}-${col}`
+        const existing = clustersMap.get(key) ?? []
+        existing.push(marker)
+        clustersMap.set(key, existing)
+      })
 
-      return {
-        id: key,
-        count: clusterMarkers.length,
-        latitude,
-        longitude,
-        bounds: clusterBounds,
-        markers: clusterMarkers,
+      clustersResult = Array.from(clustersMap.entries()).map(([key, clusterMarkers]) => {
+        const { latSum, lngSum } = clusterMarkers.reduce(
+          (acc, marker) => ({
+            latSum: acc.latSum + marker.latitude,
+            lngSum: acc.lngSum + marker.longitude,
+          }),
+          { latSum: 0, lngSum: 0 }
+        )
+        const latitude = latSum / clusterMarkers.length
+        const longitude = lngSum / clusterMarkers.length
+        const clusterBounds = L.latLngBounds(clusterMarkers.map((marker) => [marker.latitude, marker.longitude]))
+
+        return {
+          id: key,
+          count: clusterMarkers.length,
+          latitude,
+          longitude,
+          bounds: clusterBounds,
+          markers: clusterMarkers,
+        }
+      })
+
+      maxClusterSize = clustersResult.length
+        ? Math.max(...clustersResult.map((cluster) => cluster.count))
+        : 0
+      if (maxClusterSize > maxPins) {
+        cellCount += 1
       }
-    })
-  }, [bounds, markersInView, shouldCluster])
+    }
+
+    return clustersResult
+  }, [markers, maxPins, shouldCluster])
 
   const center = useMemo(() => {
     if (markers.length === 0) {
@@ -129,26 +144,18 @@ export function MapView({ markers = [], containerClassName, mapClassName, zoom =
           <MapBoundsListener onViewChange={(nextBounds, nextZoom) => {
             setBounds(nextBounds)
             setMapZoom(nextZoom)
-            const nextMarkersInView = markers.filter((marker) =>
-              nextBounds.contains(L.latLng(marker.latitude, marker.longitude))
-            )
-            if (
-              nextMarkersInView.length <= 100 ||
-              (focusedCluster && !nextBounds.contains(focusedCluster.bounds))
-            ) {
-              setFocusedCluster(null)
-            }
           }} />
           {shouldCluster
-            ? clusters.map((cluster) => (
+            ? clusters
+              .filter((cluster) => !bounds || bounds.contains(cluster.bounds.getCenter()))
+              .map((cluster) => (
               <ClusterMarker
                 key={cluster.id}
                 cluster={cluster}
                 currentZoom={mapZoom}
-                onFocus={setFocusedCluster}
               />
             ))
-            : (focusedCluster?.markers ?? markersInView).map((marker) => (
+            : markersInView.slice(0, maxPins).map((marker) => (
               <Marker
                 key={marker.id}
                 position={[marker.latitude, marker.longitude]}
@@ -197,12 +204,11 @@ function MapBoundsListener({ onViewChange }: MapBoundsListenerProps) {
 interface ClusterMarkerProps {
   cluster: MarkerCluster
   currentZoom: number
-  onFocus: (cluster: MarkerCluster) => void
 }
 
-function ClusterMarker({ cluster, currentZoom, onFocus }: ClusterMarkerProps) {
+function ClusterMarker({ cluster, currentZoom }: ClusterMarkerProps) {
   const map = useMap()
-  const countLabel = cluster.count > 300 ? '300+' : `${cluster.count}`
+  const countLabel = `${cluster.count}`
   const icon = useMemo(
     () =>
       L.divIcon({
@@ -228,7 +234,6 @@ function ClusterMarker({ cluster, currentZoom, onFocus }: ClusterMarkerProps) {
           if (map.getZoom() === currentZoom) {
             map.setZoom(currentZoom + 2)
           }
-          onFocus(cluster)
         },
       }}
     />
